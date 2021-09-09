@@ -49,7 +49,6 @@ export class CognitoUserPool extends cdk.Construct {
       authFlows: {
         userPassword: true,
         adminUserPassword: true,
-        userSrp: true,
       },
       oAuth: {
         flows: {

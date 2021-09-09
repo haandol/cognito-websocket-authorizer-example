@@ -15,14 +15,13 @@ interface IApiIntegration {
 
 export class WsApi extends cdk.Construct {
   public readonly api: apigwv2.WebSocketApi
-  public readonly authorizer: apigwv2.CfnAuthorizer
 
   constructor(scope: cdk.Construct, id: string) {
     super(scope, id)
 
     const baseIntegrations = this.createBaseIntegrations()
     this.api = this.createWebSocketApi(baseIntegrations)
-    this.authorizer = this.createAuthorizer(this.api)
+    this.createAuthorizer(this.api)
   }
 
   private createWebSocketApi(props: IApiIntegration): apigwv2.WebSocketApi {
@@ -39,12 +38,16 @@ export class WsApi extends cdk.Construct {
         integration: props.defaultIntegration,
       },
     })
-    const devStage = new apigwv2.WebSocketStage(this, `Dev`, {
-      webSocketApi: api,
-      stageName: 'dev',
-      autoDeploy: true,
-    });
 
+    const devStage = new apigwv2.CfnStage(this, `Prod`, {
+      apiId: api.apiId,
+      stageName: 'prod',
+      autoDeploy: true,
+      defaultRouteSettings: {
+        dataTraceEnabled: true,
+        loggingLevel: 'INFO',
+      },
+    });
     new cdk.CfnOutput(this, `WebsocketApiUrl`, {
       exportName: `${App.Context.ns}WebsocketApiUrl`,
       value: `${api.apiEndpoint}/${devStage.stageName}`,
@@ -60,19 +63,19 @@ export class WsApi extends cdk.Construct {
       index: 'authorizer.py',
       runtime: lambda.Runtime.PYTHON_3_8,
     })
-    const authorizerRole = new iam.Role(this, `AuthorizerRole`, {
-      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
-      managedPolicies: [
-        { managedPolicyArn: 'arn:aws:iam::aws:policy/AmazonCognitoReadOnly' },
+    handler.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'))
+    handler.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'cognito-idp:Get*',
       ],
-    })
-    handler.grantInvoke(authorizerRole)
-    return new apigwv2.CfnAuthorizer(this, `RequestAuthorizer`, {
+      resources: ['*'],
+    }))
+
+    new apigwv2.CfnAuthorizer(this, `RequestAuthorizer`, {
       apiId: api.apiId,
       authorizerType: 'REQUEST',
       name: `${App.Context.ns}Authorizer`,
       authorizerUri: `arn:aws:apigateway:${cdk.Stack.of(this).region}:lambda:path/2015-03-31/functions/${handler.functionArn}/invocations`,
-      authorizerCredentialsArn: authorizerRole.roleArn,
       identitySource: ['route.request.header.Auth'],
     })
   }
