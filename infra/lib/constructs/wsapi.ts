@@ -21,16 +21,12 @@ export class WsApi extends cdk.Construct {
 
     const baseIntegrations = this.createBaseIntegrations()
     this.api = this.createWebSocketApi(baseIntegrations)
-    this.createAuthorizer(this.api)
   }
 
   private createWebSocketApi(props: IApiIntegration): apigwv2.WebSocketApi {
     const api = new apigwv2.WebSocketApi(this, 'WebsocketApi', {
       apiName: `${App.Context.ns}WebsocketApi`,
       routeSelectionExpression: '$request.body.action',
-      connectRouteOptions: {
-        integration: props.connIntegration,
-      },
       disconnectRouteOptions: {
         integration: props.disconnIntegration,
       },
@@ -38,6 +34,15 @@ export class WsApi extends cdk.Construct {
         integration: props.defaultIntegration,
       },
     })
+
+    const authorizer = this.createAuthorizer(api)
+
+    const connRoute = api.addRoute('$connect', {
+      integration: props.connIntegration,
+    })
+    const connRouteCfn = connRoute.node.defaultChild as apigwv2.CfnRoute
+    connRouteCfn.authorizationType = 'CUSTOM'
+    connRouteCfn.authorizerId = authorizer.ref
 
     const devStage = new apigwv2.CfnStage(this, `Prod`, {
       apiId: api.apiId,
@@ -71,7 +76,7 @@ export class WsApi extends cdk.Construct {
       resources: ['*'],
     }))
 
-    new apigwv2.CfnAuthorizer(this, `RequestAuthorizer`, {
+    return new apigwv2.CfnAuthorizer(this, `RequestAuthorizer`, {
       apiId: api.apiId,
       authorizerType: 'REQUEST',
       name: `${App.Context.ns}Authorizer`,

@@ -47,12 +47,13 @@ $ npm i -g wscat
 $ wscat -c wss://xxx
 ```
 
-2. create test account on Cognito
+2. run python script to create and signin for test account
 
 ```bash
 $ pip install -r scripts/requirements.txt
 $ python script/cognito.py
-{ access_token: xxx }
+
+script_will_print_out_access_token
 ```
 
 copy access_token to your clipboard
@@ -62,7 +63,6 @@ copy access_token to your clipboard
 ```bash
 $ wscat -c wss://xxx --header Auth:[your_access_token]
 ```
-
 
 # Cleanup
 

@@ -2,25 +2,31 @@ import boto3
 
 client = boto3.client('cognito-idp')
 
-UserPoolId = 'ap-northeast-2_9eMHzsovg'
-ClientId = '7tgk6jks8gmu28ig825h4f20e9'
-Username = 'ldg55d@gmail.com'
+Username = 'test@example.com'
 Password = 'q1w2e3r4'
 
-res = client.admin_create_user(
-    UserPoolId=UserPoolId,
-    Username=Username,
-    UserAttributes=[
-        {
-            'Name': 'email',
-            'Value': Username,
-        },
-    ],
-    TemporaryPassword=Password,
-    ForceAliasCreation=False,
-    MessageAction='SUPPRESS',
-    DesiredDeliveryMediums=['EMAIL'],
-)
+# REPLACE below values
+UserPoolId = 'ap-northeast-2_9eMHzsovg'
+ClientId = '7tgk6jks8gmu28ig825h4f20e9'
+
+
+try:
+    res = client.admin_create_user(
+        UserPoolId=UserPoolId,
+        Username=Username,
+        UserAttributes=[
+            {
+                'Name': 'email',
+                'Value': Username,
+            },
+        ],
+        TemporaryPassword=Password,
+        ForceAliasCreation=False,
+        MessageAction='SUPPRESS',
+        DesiredDeliveryMediums=['EMAIL'],
+    )
+except:
+    pass
 
 res = client.admin_set_user_password(
     UserPoolId=UserPoolId,
