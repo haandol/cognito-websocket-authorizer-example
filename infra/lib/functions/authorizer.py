@@ -1,10 +1,15 @@
 import json
 import boto3
 
-client = boto3.client('cognito-idp')
+client = None
+
 
 def handler(event, context):
     print('Received event:', json.dumps(event))
+    global client
+
+    if not client:
+        client = boto3.client('cognito-idp')
 
     token = event['headers']['Auth']
     res = client.get_user(AccessToken=token)
