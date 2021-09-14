@@ -1,5 +1,4 @@
 import * as cdk from '@aws-cdk/core'
-import * as apigw from '@aws-cdk/aws-apigateway'
 import * as apigwv2 from '@aws-cdk/aws-apigatewayv2'
 import { WsApi } from '../constructs/wsapi'
 

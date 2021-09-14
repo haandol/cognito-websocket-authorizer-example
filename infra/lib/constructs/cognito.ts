@@ -32,6 +32,7 @@ export class CognitoUserPool extends cdk.Construct {
         requireUppercase: false,
       },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     })
     new cognito.UserPoolDomain(this, `UserPoolDomain`, {
       userPool,
