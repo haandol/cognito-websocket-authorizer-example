@@ -51,7 +51,7 @@ $ wscat -c wss://xxx
 
 ```bash
 $ pip install -r scripts/requirements.txt
-$ python script/cognito.py
+$ python script/authn.py
 
 script_will_print_out_access_token
 ```
